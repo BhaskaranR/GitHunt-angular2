@@ -32,6 +32,9 @@ import {
   RepoInfo
 } from './RepoInfo.ts';
 
+import {
+  scoreInfoFragment
+} from './fragments.ts';
 
 @Component({
   selector: 'vote-buttons',
@@ -182,7 +185,7 @@ class FeedEntry {
             }
             feed(type: $type) {
               createdAt
-              score
+              ...scoreInfo
               commentCount
               id
               postedBy {
@@ -211,6 +214,7 @@ class FeedEntry {
           type: context.type ? context.type.toUpperCase() : 'TOP'
         },
         forceFetch: true,
+        fragments: scoreInfoFragment,
       }
     }
   },
