@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ROUTER_DIRECTIVES } from '@angular/router';
 import { TimeAgoPipe } from 'angular2-moment';
 
@@ -25,6 +25,7 @@ class InfoLabel {
     EmojifyPipe,
     TimeAgoPipe
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <p> {{ description | emojify }}</p>
     <p>

@@ -143,6 +143,8 @@ class FeedEntry implements OnInit {
         [currentUser]="data.currentUser"
         (onVote)="onVote($event)">
       </feed-entry>
+
+      <a (click)="fetchMore()">Load more</a>
     </div>
   `
 })
@@ -152,11 +154,11 @@ class FeedEntry implements OnInit {
     return {
       data: {
         query: gql`
-          query Feed($type: FeedType!) {
+          query Feed($type: FeedType!, $offset: Int, $limit: Int) {
             currentUser {
               login
             }
-            feed(type: $type) {
+            feed(type: $type, offset: $offset, limit: $limit) {
               createdAt
               score
               commentCount
@@ -184,7 +186,9 @@ class FeedEntry implements OnInit {
           }
         `,
         variables: {
-          type: context.type ? context.type.toUpperCase() : 'TOP'
+          type: context.type ? context.type.toUpperCase() : 'TOP',
+          offset: 0,
+          limit: context.itemsPerPage,
         },
         forceFetch: true,
       }
@@ -207,7 +211,7 @@ class FeedEntry implements OnInit {
         variables: {
           repoFullName,
           type,
-        }
+        },
       })
     };
   }
@@ -216,6 +220,8 @@ export class Feed implements OnInit {
   data: any;
   type: string;
   vote: (repoFullName: string, type: string) => Promise<ApolloQueryResult>;
+  offset: number = 0;
+  itemsPerPage: number = 10;
 
   constructor(private route: ActivatedRoute) {}
 
@@ -227,5 +233,20 @@ export class Feed implements OnInit {
 
   onVote(event: onVoteEvent): void {
     this.vote(event.repoFullName, event.type);
+  }
+
+  fetchMore() {
+    this.data.fetchMore({
+      variables: {
+        offset: this.offset + this.itemsPerPage,
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult.data) { return prev; }
+        return Object.assign({}, prev, {
+          feed: [...prev.feed, ...fetchMoreResult.data.feed],
+        });
+      },
+    });
+    this.offset += this.itemsPerPage;
   }
 }
